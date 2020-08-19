@@ -1,0 +1,170 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="row">
+   <div class="col-sm-4">
+      <h3>Categories</h3>
+      <div class="list-group">
+        <a href="{{url_for('base')}}" class="list-group-item"><b>All Items</b>
+           <span class="badge">{{all_items_badge}}</span>
+        </a>
+        {% for category in categories %}
+           <a href="{{url_for('base',category_name = category.name, category_id = category.id)}}" class="list-group-item">&nbsp;&nbsp;{{category.name}}
+              <span class="badge">{{category.inventory}}</span>
+           </a>
+        {% endfor %}
+      </div>
+   </div>
+   <div class="col-sm-4">
+      <h3>{{category_name}} Items
+        {% if session.get('logged_in') %}
+          <div class="btn-group" style="float: right;">
+            <button type="button" class="btn btn-success btn-sm" id="btnNewItem" style="float: right;">&nbsp;&nbsp;Add New Item&nbsp;&nbsp;</button>
+          </div>
+        {% endif %}
+      </h3>
+      <div class="list-group">
+        {% for item in items %}
+           <a href="{{url_for('base', category_name = category_name, category_id = item.category_id, item_id = item.id)}}" class="list-group-item">{{item.name}}
+             {% if session.get('logged_in') and session.get('user_id') == item.user_id %}
+               <div class="btn-group" style="float: right;">
+                 <button type="button" class="btn btn-info btn-xs" id="btnEditItem_{{item.id}}">&nbsp;&nbsp;edit&nbsp;&nbsp;</button>
+                 <button type="button" class="btn btn-danger btn-xs" id="btnDeleteItem_{{item.id}}">delete</button>
+              </div>
+             {% endif %}
+           </a>
+        {% endfor %}
+      </div>
+   </div>
+   <div class="col-sm-4">
+      <h3>Description</h3>
+      <div class="panel panel-default">
+         <div class="panel-heading">{{name}}</div>
+         <div class="panel-body">{{description}}</div>
+      </div>
+   </div>
+</div>
+
+<!-- Modal : Add New Item -->
+<div class="modal fade" id="newItemModel" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header" style="padding:20px 30px;">
+          <h4>Add New Item</h4>
+        </div>
+        <div class="modal-body" style="padding:20px 30px;">
+          <form role="form" action="/{{category_name}}/item/new" method = "post">
+            <div class="form-group">
+              <h5>Name:</h5>
+              <input type="text" class="form-control" name="newItemName" placeholder="Enter new item name" required>
+            </div>
+            <div class="form-group">
+              <h5>Category:</h5>
+              <select class="form-control" name="newItemCategory">
+                {% for category in categories %}
+                   <option>{{category.name}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <h5>Description:</h5>
+              <textarea class="form-control" rows="5" name="newItemDescription" placeholder="Enter new item description" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-block">Add New Item</button>
+          </form>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger btn-default pull-right" data-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+  </div>
+  <script>
+    $(document).ready(function(){
+      $("#btnNewItem").click(function(){
+        $("#newItemModel").modal({backdrop: "static"});
+      });
+    });
+  </script>
+
+{% for item in items %}
+     {% if session.get('logged_in') and session.get('user_id') == item.user_id %}
+         <!-- Modal : Edit Item -->
+         <div class="modal fade" id="editItemModel_{{item.id}}" role="dialog">
+           <div class="modal-dialog">
+             <!-- Modal content-->
+               <div class="modal-content">
+                 <div class="modal-header" style="padding:20px 30px;">
+                   <h4>Edit Item</h4>
+                 </div>
+                 <div class="modal-body" style="padding:20px 30px;">
+                   <form role="form" action="/{{category_name}}/item/edit/{{item.id}}" method = "post">
+                     <div class="form-group">
+                       <h5>Name:</h5>
+                       <input type="text" class="form-control" name="editItemName" value="{{item.name}}" required>
+                     </div>
+                     <div class="form-group">
+                       <h5>Category:</h5>
+                       <select class="form-control" name="editItemCategory">
+                         {% for category in categories %}
+                            <option
+                            {% if category.id == item.category_id %}selected{%endif%}
+                            >{{category.name}}</option>
+                         {% endfor %}
+                       </select>
+                     </div>
+                     <div class="form-group">
+                       <h5>Description:</h5>
+                       <textarea class="form-control" rows="5" name="editItemDescription" required>{{item.description}}</textarea>
+                     </div>
+                     <button type="submit" class="btn btn-success btn-block">Save Changes</button>
+                   </form>
+                 </div>
+               <div class="modal-footer">
+                 <button type="submit" class="btn btn-danger btn-default pull-right" data-dismiss="modal">Cancel</button>
+               </div>
+             </div>
+           </div>
+           </div>
+           <script>
+             $(document).ready(function(){
+               $("#btnEditItem_{{item.id}}").click(function(e){
+                 e.preventDefault();
+                 $("#editItemModel_{{item.id}}").modal({backdrop: "static"});
+               });
+             });
+           </script>
+         <!-- Modal : Delete Item -->
+         <div class="modal fade" id="deleteItemModel_{{item.id}}" role="dialog">
+           <div class="modal-dialog">
+             <!-- Modal content-->
+             <div class="modal-content">
+               <div class="modal-header" style="padding:20px 30px;">
+                 <h4>Delete Item</h4>
+               </div>
+               <div class="modal-body" style="padding:20px 30px;">
+                 <form role="form" action="/{{category_name}}/item/delete/{{item.id}}" method = "post">
+                   <div class="form-group">
+                     <h5>Are you sure you want to permanently remove item : <b>{{item.name}}</b> ?</h5>
+                   </div>
+                     <button type="submit" class="btn btn-danger btn-block">Delete Item</button>
+                 </form>
+               </div>
+               <div class="modal-footer">
+                 <button type="submit" class="btn btn-info btn-default pull-right" data-dismiss="modal">Cancel</button>
+               </div>
+             </div>
+           </div>
+         </div>
+         <script>
+         $(document).ready(function(){
+           $("#btnDeleteItem_{{item.id}}").click(function(e){
+             e.preventDefault();
+             e.stopPropagation();
+             $("#deleteItemModel_{{item.id}}").modal({backdrop: "static"});
+           });
+         });
+         </script>
+     {% endif %}
+{% endfor %}
+{% endblock %}

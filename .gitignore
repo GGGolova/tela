@@ -1,0 +1,22 @@
+# python apps
+__pycache__
+*.pyc
+
+# vagrant
+.vagrant
+
+# vs code
+.vscode
+tela.code-workspace
+
+# npcw_workspace
+vagrant/npcw_myworkspace/static/mdb/
+
+# catalog
+#
+# if you don't want to track changes to client_secret.json:
+# git update-index --assume-unchanged vagrant/catalog/client_secret.json
+#
+# to restore tracking changes to client_secret.json:
+# git update-index --no-assume-unchanged vagrant/catalog/client_secret.json
+vagrant/catalog/client_secret.json
